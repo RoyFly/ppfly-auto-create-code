@@ -1,6 +1,7 @@
 package com.ppfly;
 
 import com.ppfly.cache.PropertiesContext;
+import com.ppfly.cache.TableMetaCache;
 import com.ppfly.factory.AutoGenerationCodeTool;
 import com.ppfly.util.SpringContextUtil;
 import org.springframework.boot.SpringApplication;
@@ -20,6 +21,8 @@ public class AutoCreateCodeApplication {
         propertiesContext.setSchema("test");//数据库名称
         propertiesContext.setAuthor("ppfly");//代码生成者
         //生成代码
+        //获取表的字段、注释、字段类型等信息
+        TableMetaCache.getInstance().initTableMsg();
         new AutoGenerationCodeTool().createCode();
     }
 }
