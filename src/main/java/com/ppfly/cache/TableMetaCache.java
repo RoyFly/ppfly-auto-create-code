@@ -1,15 +1,15 @@
 package com.ppfly.cache;
 
-import com.ppfly.enums.ResultEnum;
-import com.ppfly.exception.AccException;
-import com.ppfly.util.ConnectionUtil;
+import com.ppfly.strategy.sql.SqlProvider;
+import com.ppfly.strategy.sql.SqlStrategy;
+import com.ppfly.strategy.sql.SqlStrategyFactory;
+import com.ppfly.util.SpringContextUtil;
 import lombok.Data;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class TableMetaCache {
@@ -64,47 +64,33 @@ public class TableMetaCache {
     }
 
     /**
-     * 获取表的字段、注释、字段类型等信息
+     * 获取表注释信息
+     * 获取字段名称、字段注释、字段类型、字段长度等信息
      */
-    public void initTableMetaData() {
-        ConnectionUtil jdbc = new ConnectionUtil();
-        Connection conn = null;
-        ResultSet rs = null;
+    public void initTableMsg() {
+        SqlProvider sqlProvider = new SqlProvider();
         try {
-
-            conn = jdbc.getConn(); // 得到数据库连接
-            //1.获取表中的字段名称、字段类型、字段描述、字段类型长度
-            PreparedStatement ps = conn.prepareStatement(ConnectionUtil.getMetaDataSql());
-            ps.setString(1, PropertiesContext.getInstance().getSchema().toUpperCase());
-            ps.setString(2, PropertiesContext.getInstance().getTableName().toUpperCase());
-            rs = ps.executeQuery();
-
-            if (rs.next()) {
-                do {
-                    colNames.add(rs.getString("column_name"));
-                    colTypes.add(rs.getString("data_type"));
-                    comments.add(rs.getString("comments"));
-                    intLengths.add(rs.getInt("data_length"));
-                } while (rs.next());
-            } else {
-                throw new AccException(ResultEnum.TABLE_NOT_EXIST);
-            }
-            rs.close();
-
-            //2.获取表名的描述信息
-            PreparedStatement psTabname = conn.prepareStatement(ConnectionUtil.getTableCommentsSql());
-            psTabname.setString(1, PropertiesContext.getInstance().getTableName().toUpperCase());
-            rs = psTabname.executeQuery();
-            if (rs.next()) {
-                tableName_comments = rs.getString("comments");
-            }
-            rs.close();
-        } catch (AccException ae) {
-            throw new AccException(ResultEnum.ERROR.getCode(), ae.getMessage());
+            final SqlStrategy sqlStrategy = SqlStrategyFactory.getSqlStrategy(SqlStrategyFactory.DB_TYPE_MYSQL);
+            sqlProvider.setSqlStrategy(sqlStrategy);
         } catch (Exception e) {
-            throw new AccException(ResultEnum.ERROR.getCode(), e.getMessage());
-        } finally {
-            jdbc.closeConnection(conn);
+            e.printStackTrace();
         }
+
+
+        //从容器获取JdbcTemplate
+        JdbcTemplate jdbcTemplate = SpringContextUtil.getBean(JdbcTemplate.class);
+        final List<Map<String, Object>> metaDataList = jdbcTemplate.queryForList(sqlProvider.getMetaDataSql(),
+                new Object[]{PropertiesContext.getInstance().getSchema().toUpperCase(), PropertiesContext.getInstance().getTableName().toUpperCase()});
+        for (Map<String, Object> map : metaDataList) {
+            colNames.add((String) map.get("column_name"));
+            colTypes.add((String) map.get("data_type"));
+            comments.add((String) map.get("comments"));
+            intLengths.add((map.get("data_length") == null) ? 0 : Integer.valueOf(map.get("data_length").toString()));
+        }
+
+        final List<Map<String, Object>> tableCommentList = jdbcTemplate.queryForList(sqlProvider.getTableCommentsSql(),
+                new Object[]{PropertiesContext.getInstance().getTableName().toUpperCase()});
+        final Object comments = tableCommentList.get(0).get("comments");
+        tableName_comments = (comments != null) ? comments.toString() : "";
     }
 }

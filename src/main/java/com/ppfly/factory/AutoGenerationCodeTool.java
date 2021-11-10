@@ -25,7 +25,7 @@ public class AutoGenerationCodeTool {
             FreeMarkerManager freeMarker = new FreeMarkerManager();
 
             //获取表的字段、注释、字段类型等信息
-            TableMetaCache.getInstance().initTableMetaData();
+            TableMetaCache.getInstance().initTableMsg();
 
             //获取实体名称
             String entityName = Table2ClassUtil.initcapTableName(PropertiesContext.getInstance().getTableName());
