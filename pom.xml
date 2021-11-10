@@ -12,7 +12,7 @@
     <artifactId>auto-create-code</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>auto-create-code</name>
-    <description>Demo project for Spring Boot</description>
+    <description>ppfly-auto-create-code</description>
 
     <properties>
         <java.version>1.8</java.version>
@@ -29,6 +29,7 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
         <!-- 引入freeMarker的依赖包. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -51,6 +52,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.ppfly.AutoCreateCodeApplication</mainClass>
+                </configuration>
             </plugin>
         </plugins>
         <resources>
@@ -58,13 +62,8 @@
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.properties</include>
+                    <include>**/*.properties</include>
                     <include>**/*.xml</include>
-                </includes>
-                <filtering>false</filtering>
-            </resource>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes>
                     <include>**/*.ftl</include>
                 </includes>
                 <filtering>false</filtering>

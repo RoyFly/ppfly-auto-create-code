@@ -13,13 +13,13 @@ public class FreeMarkerManager {
 
     private Configuration cfg;
 
-    public void init(Class<?> class_) throws Exception {
+    public void init() throws Exception {
 
         // 第一步：创建一个Configuration对象，直接new一个对象。构造方法的参数就是freemarker对于的版本号。
         cfg = new Configuration(Configuration.getVersion());
         // 第二步：设置模板文件所在的路径。
-        String templatePath = class_.getResource("").getPath();
-        cfg.setDirectoryForTemplateLoading(new File(templatePath+"../template"));
+        String templatePath = this.getClass() .getClassLoader().getResource("").getPath();
+        cfg.setDirectoryForTemplateLoading(new File(templatePath+"/templates"));
         // 第三步：设置模板文件使用的字符集。一般就是utf-8.
         cfg.setDefaultEncoding("UTF-8");
 

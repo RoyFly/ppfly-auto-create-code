@@ -1,87 +1,14 @@
-package com.ppfly.factory;
+package com.ppfly.util;
 
-import com.ppfly.util.FieldTypeConsts;
+import java.util.List;
 
-/**
- * @Description: 生成代码的一些参数设置以及部分参数类型转换
- * @Date: 2019/3/18 13:35
- */
-public class BeanProperties {
+public class Table2ClassUtil {
 
-    //业务代码的包名
-    private static String codePackage;
-
-    //实体bean的包名
-    private static String entityPackage;
-
-    //生成代码人员
-    private static String author;
-
-    //大小写都可以，表名
-    private static String tableName;
-
-    //代码生成后存放的位置
-    private static String path;
-
-    //数据库名称
-    private static String schema;
-
-    //由其它地方自动设置
-    private static String tableNameComments;
-
-    public static String getPackage() {
-        return codePackage;
-    }
-
-    public static void setPackage(String codePackageValue) {
-        codePackage = codePackageValue;
-        entityPackage = codePackage + ".entity";
-    }
-
-    public static String getEntityPackage() {
-        return entityPackage;
-    }
-
-    public static String getTableName() {
-        return tableName;
-    }
-
-    public static void setTableName(String tableNameValue) {
-        tableName = tableNameValue;
-    }
-
-    public static String getTableNameComments() {
-        return tableNameComments;
-    }
-
-    public static void setTableNameComments(String tableNameCommentsValue) {
-        tableNameComments = tableNameCommentsValue;
-    }
-
-    public static String getPath() {
-        return path;
-    }
-
-    public static void setPath(String pathValue) {
-        path = pathValue;
-    }
-
-    public static String getAuthor() {
-        return author;
-    }
-
-    public static void setAuthor(String authorValue) {
-        author = authorValue;
-    }
-
-    public static void setSchema(String schemaValue) {
-        schema = schemaValue;
-    }
-
-    public static String getSchema() {
-        return schema;
-    }
-
+    /**
+     * 获取实例名称
+     * @param name
+     * @return
+     */
     public static String getCaptureName(String name) {
         char[] cs = name.toCharArray();
         if (cs[0] >= 'a' && cs[0] <= 'z') {
@@ -91,6 +18,66 @@ public class BeanProperties {
             return String.valueOf(cs);
         }
     }
+
+    /**
+     * 把表名/get/set后半部的属性等字符串的首字母改成大写
+     *
+     * @param str
+     * @return
+     */
+    public static String initcapTableName(String str) {
+        String word[] = str.trim().toLowerCase().split("_");
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < word.length; i++) {
+            char[] ch = word[i].toCharArray();
+            if (ch[0] >= 'a' && ch[0] <= 'z') {
+                ch[0] = (char) (ch[0] - 32);
+            }
+            sb.append(new String(ch));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 将字段生成属性首字母小写, 把列名输入字符串的第二"_"后的首字母改成大写
+     *
+     * @param ColName
+     * @return
+     */
+    public static String initcapColName(String ColName) {
+        String word[] = ColName.trim().toLowerCase().split("_");
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < word.length; i++) {
+            char[] ch = word[i].toCharArray();
+            if (i > 0) {
+                if (ch[0] >= 'a' && ch[0] <= 'z') {
+                    ch[0] = (char) (ch[0] - 32);
+                }
+            }
+            sb.append(new String(ch));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * @param
+     * @Description: 获取所有数据库字段名称
+     * @author Created on 2019/3/23 13:24
+     */
+    public static String getColumnName(List<String> colNames) {
+        StringBuffer content = new StringBuffer();
+        for (int i = 0; i < colNames.size(); i++) {
+            if (i == colNames.size() - 1) {
+                content.append("\t" + colNames.get(i));//字段名称
+            } else {
+                content.append("\t" + colNames.get(i) + ",");//字段名称
+                content.append("\r\n");//换行隔开
+            }
+        }
+        return content.toString();
+    }
+
+
 
     /**
      * @param

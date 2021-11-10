@@ -11,6 +11,7 @@ public enum ResultEnum {
     SQL_NOT_EXIST(102, "数据库查询语句不存在"),
     TABLE_NOT_EXIST(103, "查询表结构结果为空"),
     ;
+
     private Integer code;
 
     private String msg;
@@ -19,4 +20,4 @@ public enum ResultEnum {
         this.code = code;
         this.msg = msg;
     }
-}
+    }
