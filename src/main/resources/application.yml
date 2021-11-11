@@ -6,3 +6,9 @@ spring:
     password: 123456
   main:
     web-application-type: NONE
+propertiescontext:
+  projectpath: D:/java
+  codepackage: com.ppfly.knowledge
+  tablename: t_user
+  schema: test
+  author: pipifeiya

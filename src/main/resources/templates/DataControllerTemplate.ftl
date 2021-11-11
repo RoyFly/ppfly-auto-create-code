@@ -20,7 +20,7 @@ import java.util.Map;
  * @date ${now}
  */
 @Controller
-@RequestMapping("${entityName}/data")
+@RequestMapping("${instanceName}/data")
 public class ${entityName}DataController {
 
     @Autowired

@@ -2,93 +2,60 @@ package com.ppfly.factory;
 
 import com.ppfly.cache.PropertiesContext;
 import com.ppfly.cache.TableMetaCache;
-import com.ppfly.exception.AccException;
-import com.ppfly.util.FreeMarkerManager;
+import com.ppfly.exception.CreateException;
+import com.ppfly.strategy.sql.SqlStrategyFactory;
+import com.ppfly.util.FreeMarkerUtil;
 import com.ppfly.util.Table2ClassUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-
+/**
+ * 自动创建代码创建者
+ */
 @Slf4j
-public class AutoGenerationCodeTool {
+public class AutoCreateCodeCreator {
 
     /**
      * @param
-     * @Description: 生成代码
-     * @author Created on 2019/5/14 20:06
+     * @description: 生成代码核心逻辑
+     * @date 2021/10/03 14:06
      */
     public void createCode() {
+        //获取表的字段、注释、字段类型等信息
+        TableMetaCache.getInstance().initTableMsg(SqlStrategyFactory.DB_TYPE_MYSQL);
 
         try {
-            //模板
-            Map<String, Object> freeMarkerData = new HashMap();
-            FreeMarkerManager freeMarker = new FreeMarkerManager();
-
             //获取实体名称
-            String entityName = Table2ClassUtil.initcapTableName(PropertiesContext.getInstance().getTableName());
+            String entityName = Table2ClassUtil.getEntityNameFromCodePackage(PropertiesContext.getInstance().getCodePackage());
 
-            //初始化模板数据
-            initFreeMarkerData(freeMarker, freeMarkerData, entityName);
+            //生成代码所需的参数键值对
+            final Map<String, String> freeMarkerData = getFreeMarkerData(entityName);
 
-            //根据freemarker模板生成代码
-            generateCode(freeMarker, freeMarkerData, entityName);
+            //生成实体
+            createEntity(freeMarkerData, entityName);
 
-        } catch (AccException ae) {
-            ae.printStackTrace();
+            //开始生成service、controller、dao等代码
+            generateOtherCode(freeMarkerData, entityName);
+
+        } catch (CreateException ce) {
+            ce.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
+
     /**
-     * 生成代码核心逻辑
+     * 获取并返回生成代码所需的参数键值对
      *
-     * @param freeMarker
-     * @param freeMarkerData
      * @param entityName
+     * @return
+     * @date 2021/10/03 21:57
      */
-    private void generateCode(FreeMarkerManager freeMarker, Map<String, Object> freeMarkerData, String entityName) {
-        try {
-            //初始化freemarker配置，并设置freemarker模板文件所在的路径
-            freeMarker.init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        //生成实体
-        createEntity(freeMarker, freeMarkerData, entityName);
-        //开始生成service、controller、dao等代码
-        generateOtherCode(freeMarker, freeMarkerData, entityName);
-    }
-
-    /**
-     * @param entityName
-     * @param freeMarkerData
-     * @param freeMarker
-     * @Description: 生成实体
-     * @author Created on 2019/3/21 15:57
-     */
-    private void createEntity(FreeMarkerManager freeMarker, Map<String, Object> freeMarkerData, String entityName) {
-
-        String filePath = PropertiesContext.getInstance().getProjectPath() + "/" + PropertiesContext.getInstance().getCodePackage().replace(".", "/") + "/entity";
-
-        log.info("实体存放路径:" + filePath);
-        boolean y = freeMarker.otherProcess("entityTemplate.ftl", entityName + ".java", "GBK", freeMarkerData, filePath);
-
-        if (y) {
-           log.error("生成实体" + entityName + ".java成功!");
-        }
-    }
-
-
-    /**
-     * @param
-     * @Description: 初始化生成代码所需的参数值
-     * @author Created on 2019/3/23 13:33
-     */
-    private void initFreeMarkerData(FreeMarkerManager freeMarker, Map<String, Object> freeMarkerData, String entityName) {
+    private Map<String, String> getFreeMarkerData(String entityName) {
+        Map<String, String> freeMarkerData = new HashMap<>();
         //获取当前日期
         String createTime = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(Calendar.getInstance().getTime());
         //设置生成代码所需的参数
@@ -102,16 +69,36 @@ public class AutoGenerationCodeTool {
         freeMarkerData.put("package", PropertiesContext.getInstance().getCodePackage());
         freeMarkerData.put("author", PropertiesContext.getInstance().getAuthor());
         freeMarkerData.put("now", createTime);
+        return freeMarkerData;
+    }
+
+
+    /**
+     * 生成实体entity
+     *
+     * @param freeMarkerData
+     * @param entityName
+     */
+    private void createEntity(Map<String, String> freeMarkerData, String entityName) {
+
+        String filePath = PropertiesContext.getInstance().getProjectPath() + "/" + PropertiesContext.getInstance().getCodePackage().replace(".", "/") + "/entity";
+
+        log.info("实体存放路径:" + filePath);
+        try {
+            FreeMarkerUtil.otherProcess("entityTemplate.ftl", entityName + ".java", "GBK", freeMarkerData, filePath);
+            log.error("生成实体" + entityName + ".java成功!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * 生成service、controller、dao等代码
      *
-     * @param freeMarker
      * @param freeMarkerData
      * @param entityName
      */
-    private void generateOtherCode(FreeMarkerManager freeMarker, Map<String, Object> freeMarkerData, String entityName) {
+    private void generateOtherCode(Map<String, String> freeMarkerData, String entityName) {
 
         Map<String, List<String>> beanMap = new HashMap<>();
 
@@ -137,10 +124,11 @@ public class AutoGenerationCodeTool {
             String filePath = PropertiesContext.getInstance().getProjectPath() + "/" + (PropertiesContext.getInstance().getCodePackage() + "." + entry.getKey()).replace(".", "/");
             final List<String> suffixList = entry.getValue();
             for (String suffix : suffixList) {
-                boolean y = freeMarker.otherProcess(suffix + "Template.ftl", entityName + suffix + ".java", "GBK", freeMarkerData, filePath);
-
-                if (y) {
+                try {
+                    FreeMarkerUtil.otherProcess(suffix + "Template.ftl", entityName + suffix + ".java", "GBK", freeMarkerData, filePath);
                     log.error("生成" + entityName + suffix + "成功!");
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -149,8 +137,8 @@ public class AutoGenerationCodeTool {
 
     /**
      * @param
-     * @Description: 解析输出属性
-     * @author Created on 2019/3/23 13:23
+     * @description: 解析输出属性
+     * @date 2021/10/03 13:23
      */
     private String processAllAttrs() {
 

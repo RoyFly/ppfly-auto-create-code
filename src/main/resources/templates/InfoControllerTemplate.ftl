@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @date ${now}
  */
 @Controller
-@RequestMapping("${entityName}/info")
+@RequestMapping("${instanceName}/info")
 public class ${entityName}InfoController {
 
     @Autowired

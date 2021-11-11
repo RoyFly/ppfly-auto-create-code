@@ -1,7 +1,7 @@
 package com.ppfly.strategy.sql;
 
 import com.ppfly.enums.ResultEnum;
-import com.ppfly.exception.AccException;
+import com.ppfly.exception.CreateException;
 
 /**
  * SQL语句
@@ -22,7 +22,7 @@ public class SqlStrategyFactory {
         try {
             return (SqlStrategy) Class.forName(SqlStrategy.class.getPackage().getName() + "." + dbType + "SqlStrategy").newInstance();
         } catch (Exception e) {
-            throw new AccException(ResultEnum.DB_TYPE_NOT_SUPPORT);
+            throw new CreateException(ResultEnum.DB_TYPE_NOT_SUPPORT);
         }
     }
 

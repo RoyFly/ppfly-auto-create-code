@@ -1,5 +1,7 @@
 package com.ppfly.cache;
 
+import com.ppfly.enums.ResultEnum;
+import com.ppfly.exception.CreateException;
 import com.ppfly.strategy.sql.SqlProvider;
 import com.ppfly.strategy.sql.SqlStrategy;
 import com.ppfly.strategy.sql.SqlStrategyFactory;
@@ -64,13 +66,16 @@ public class TableMetaCache {
     }
 
     /**
+     * 充血模型：
      * 获取表注释信息
      * 获取字段名称、字段注释、字段类型、字段长度等信息
+     *
+     * @param dbType
      */
-    public void initTableMsg() {
+    public void initTableMsg(String dbType) {
         SqlProvider sqlProvider = new SqlProvider();
         try {
-            final SqlStrategy sqlStrategy = SqlStrategyFactory.getSqlStrategy(SqlStrategyFactory.DB_TYPE_MYSQL);
+            final SqlStrategy sqlStrategy = SqlStrategyFactory.getSqlStrategy(dbType);
             sqlProvider.setSqlStrategy(sqlStrategy);
         } catch (Exception e) {
             e.printStackTrace();
@@ -90,7 +95,12 @@ public class TableMetaCache {
 
         final List<Map<String, Object>> tableCommentList = jdbcTemplate.queryForList(sqlProvider.getTableCommentsSql(),
                 new Object[]{PropertiesContext.getInstance().getTableName().toUpperCase()});
-        final Object comments = tableCommentList.get(0).get("comments");
-        tableName_comments = (comments != null) ? comments.toString() : "";
+        final Object comments;
+        try {
+            comments = tableCommentList.get(0).get("comments");
+            tableName_comments = (comments != null) ? comments.toString() : "";
+        } catch (Exception e) {
+            throw new CreateException(ResultEnum.TABLE_NOT_EXIST);
+        }
     }
 }

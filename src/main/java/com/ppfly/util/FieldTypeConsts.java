@@ -1,8 +1,8 @@
 package com.ppfly.util;
 
 /**
-* @Description:  数据库字段类型常量
-* @Date: 2019/5/13 20:18
+* @description:  数据库字段类型常量
+* @Date: 2021/10/03 20:18
 */
 public class FieldTypeConsts {
 

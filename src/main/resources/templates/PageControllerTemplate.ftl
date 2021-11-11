@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @date ${now}
  */
 @Controller
-@RequestMapping("${entityName}/page")
+@RequestMapping("${instanceName}/page")
 public class ${entityName}PageController {
 
     @Autowired

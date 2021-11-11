@@ -6,9 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Spring容器工具类
+ * 持有ApplicationContext
+ */
 public class SpringContextUtil {
 
-    public static ApplicationContext applicationContext;
+    private static ApplicationContext applicationContext;
 
     private SpringContextUtil() {
     }

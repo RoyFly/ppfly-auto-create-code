@@ -6,6 +6,7 @@ public class Table2ClassUtil {
 
     /**
      * 获取实例名称
+     *
      * @param name
      * @return
      */
@@ -20,13 +21,17 @@ public class Table2ClassUtil {
     }
 
     /**
-     * 把表名/get/set后半部的属性等字符串的首字母改成大写
+     * 通过表名获取实体Entity名称
      *
-     * @param str
+     * @param tableName
      * @return
      */
-    public static String initcapTableName(String str) {
-        String word[] = str.trim().toLowerCase().split("_");
+    public static String getEntityNameFromTableName(String tableName) {
+        final String lowerCaseTableName = tableName.trim().toLowerCase();
+        if (lowerCaseTableName.startsWith("t_")) {
+            tableName = tableName.substring(2);
+        }
+        String word[] = tableName.split("_");
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < word.length; i++) {
             char[] ch = word[i].toCharArray();
@@ -37,6 +42,21 @@ public class Table2ClassUtil {
         }
         return sb.toString();
     }
+
+    /**
+     * 通过包名获取实体Entity名称
+     *
+     * @param codePackage
+     * @return
+     */
+    public static String getEntityNameFromCodePackage(String codePackage) {
+        String lowerCaseEntityName = codePackage.substring(codePackage.lastIndexOf(".") + 1).toLowerCase();
+        //进行字母的ASCII编码前移，效率要高于截取字符串进行转换的操作
+        char[] chars = lowerCaseEntityName.toCharArray();
+        chars[0] -= 32;
+        return String.valueOf(chars);
+    }
+
 
     /**
      * 将字段生成属性首字母小写, 把列名输入字符串的第二"_"后的首字母改成大写
@@ -61,8 +81,8 @@ public class Table2ClassUtil {
 
     /**
      * @param
-     * @Description: 获取所有数据库字段名称
-     * @author Created on 2019/3/23 13:24
+     * @description: 获取所有数据库字段名称
+     * @date 2021/10/03 13:24
      */
     public static String getColumnName(List<String> colNames) {
         StringBuffer content = new StringBuffer();
@@ -78,11 +98,10 @@ public class Table2ClassUtil {
     }
 
 
-
     /**
      * @param
-     * @Description: 数据库字段类型转Java实例变量类型
-     * @author Created on 2019/3/17 19:31
+     * @description: 数据库字段类型转Java实例变量类型
+     * @date 2021/10/03 19:31
      */
     public static String fieldType2JavaType(String fileType) {
 
@@ -104,8 +123,8 @@ public class Table2ClassUtil {
 
     /**
      * @param
-     * @Description: 检查字段类型是否是数字类型
-     * @author Created on 2019/3/17 19:17
+     * @description: 检查字段类型是否是数字类型
+     * @date 2021/10/03 19:17
      */
     private static boolean checkNumber(String fieldType) {
 
@@ -123,8 +142,8 @@ public class Table2ClassUtil {
 
     /**
      * @param
-     * @Description: 检查字段类型是否是字符串类型
-     * @author Created on 2019/3/17 19:17
+     * @description: 检查字段类型是否是字符串类型
+     * @date 2021/10/03 19:17
      */
     private static boolean checkString(String fieldType) {
 
@@ -140,8 +159,8 @@ public class Table2ClassUtil {
 
     /**
      * @param
-     * @Description: 检查字段类型是否是日期类型
-     * @author Created on 2019/3/17 19:17
+     * @description: 检查字段类型是否是日期类型
+     * @date 2021/10/03 19:17
      */
     private static boolean checkDate(String fieldType) {
 
